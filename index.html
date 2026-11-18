@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.github.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Ranking comercial de asesores | Venejugos</title>
+<meta name="description" content="Ranking de asesores de Venejugos por Rolling en kilos, activación de cartera y venta por línea.">
+<meta name="theme-color" content="#1a4fe8">
+<link rel="preload" href="bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="logo-venejugos.png">
+</head>
+<body class="entra">
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="masthead">
+  <a class="marca" href="#ranking" aria-label="Ranking comercial, inicio">
+    <img src="logo-venejugos.png" alt="Venejugos" width="52" height="52" fetchpriority="high">
+    <span class="marca-texto"><span class="wordmark">Ranking</span><span class="marca-sub">Venejugos</span></span>
+  </a>
+  <span class="espacio"></span>
+  <nav class="segmentos" aria-label="Secciones">
+    <a href="#ranking" data-seccion="tablero">Tablero</a>
+    <a href="#historico" data-seccion="admin">Panel administrativo</a>
+  </nav>
+</header>
+<svg class="cinta" viewBox="0 0 1280 60" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="metal-plata" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1280" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".22" stop-color="#c3cde2"/><stop offset=".45" stop-color="#ffffff"/><stop offset=".7" stop-color="#a9b6cf"/><stop offset="1" stop-color="#ffffff"/></linearGradient>
+    <linearGradient id="metal-rojo" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1280" y2="0"><stop offset="0" stop-color="#ff5a6e"/><stop offset=".25" stop-color="#e2001a"/><stop offset=".5" stop-color="#8f0011"/><stop offset=".75" stop-color="#e2001a"/><stop offset="1" stop-color="#ff4d63"/></linearGradient>
+  </defs>
+  <path class="c-azul" pathLength="1600" d="M8 34 C 260 6, 520 52, 790 28 S 1120 6, 1272 22"/>
+  <path class="c-rojo" pathLength="1600" d="M8 46 C 280 20, 560 60, 820 40 S 1140 22, 1272 34"/>
+</svg>
+
+<main id="contenido" tabindex="-1">
+  <h1 class="titular" id="titular">Ranking comercial de asesores.</h1>
+  <p class="bajada" id="bajada">Rolling en kilos, activación de cartera y venta por línea, en una sola tabla de posiciones.</p>
+
+  <section class="filtros" id="filtros" aria-label="Filtros del ranking" hidden>
+    <div class="campo"><label for="selMes">Mes evaluado</label><select id="selMes"></select></div>
+    <div class="campo"><label for="selBase">Promedio con</label>
+      <select id="selBase">
+        <option value="3">3 meses anteriores</option>
+        <option value="6">6 meses anteriores</option>
+        <option value="0">Todos los meses anteriores</option>
+      </select></div>
+    <div class="campo"><label for="selGrupo">Grupo</label><select id="selGrupo"></select></div>
+    <div class="campo"><label for="selOrden">Ordenar por</label>
+      <select id="selOrden">
+        <option value="total">Puntaje total</option>
+        <option value="nestle">Puntos Nestlé</option>
+        <option value="pepsico">Puntos PepsiCo</option>
+        <option value="sanDomingo">Puntos San Domingo</option>
+        <option value="resto">Puntos otras líneas</option>
+        <option value="venta">Venta del mes</option>
+      </select></div>
+    <div class="filtros-acc">
+      <button type="button" class="btn btn-borde" id="btnCsv">Descargar CSV</button>
+      <button type="button" class="btn btn-primario" id="btnImprimir">Imprimir o guardar en PDF</button>
+    </div>
+  </section>
+
+  <nav class="chips" id="navTablero" aria-label="Vistas del tablero">
+    <a class="chip" href="#ranking" data-vista="ranking">Ranking general</a>
+    <a class="chip" href="#bloques" data-vista="bloques">Por bloque</a>
+    <a class="chip" href="#grupos" data-vista="grupos">Grupos</a>
+    <a class="chip" href="#control" data-vista="control">Control especial</a>
+  </nav>
+  <nav class="chips" id="navAdmin" aria-label="Panel administrativo" hidden>
+    <a class="chip" href="#historico" data-vista="historico">Carga del histórico</a>
+    <a class="chip" href="#rolling" data-vista="rolling">Carga del Rolling y activaciones</a>
+    <a class="chip" href="#modelo" data-vista="modelo">Modelo y pesos</a>
+    <a class="chip" href="#github" data-vista="github">Conexión GitHub</a>
+  </nav>
+
+  <div id="estadoGeneral" class="estado-g" role="status"></div>
+
+  <!-- ===== TABLERO ===== -->
+  <div id="tablero" hidden>
+    <div class="rej mt" id="kpis"></div>
+    <div class="rej mt" id="avisos"></div>
+
+    <section class="vista" id="vista-ranking" aria-label="Ranking general">
+      <div class="rej mt">
+        <article class="tarjeta resumen c12" id="narrativa"></article>
+        <article class="tarjeta c8" aria-labelledby="t-pos">
+          <div class="t-cab">
+            <div><h2 id="t-pos">Posiciones</h2><p class="sub" id="subPos"></p></div>
+            <div class="leyenda" id="leyenda"></div>
+          </div>
+          <ol class="ranking" id="listaRanking"></ol>
+        </article>
+        <div class="c4 col">
+          <article class="tarjeta" aria-labelledby="t-rep">
+            <h2 id="t-rep">Cómo se reparten los 100 puntos</h2>
+            <p class="sub">Peso de cada bloque según el promedio mensual de facturación.</p>
+            <div class="grafico bajo"><canvas id="gReparto" role="img" aria-label="Reparto de puntos por bloque"></canvas></div>
+            <ul class="reparto-lista" id="repartoLista"></ul>
+          </article>
+          <article class="tarjeta" aria-labelledby="t-cb">
+            <h2 id="t-cb">Cumplimiento promedio por bloque</h2>
+            <p class="sub">Promedio de los asesores rankeados. Verde desde 100 %, ámbar desde 70 %.</p>
+            <ul class="cumpl-bloques" id="cumplBloques"></ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="vista" id="vista-bloques" aria-label="Detalle por bloque" hidden>
+      <div class="chips mt" role="group" aria-label="Bloque" id="selBloque">
+        <button type="button" class="chip" data-b="nestle" aria-pressed="true">Nestlé</button>
+        <button type="button" class="chip" data-b="pepsico" aria-pressed="false">PepsiCo</button>
+        <button type="button" class="chip" data-b="sanDomingo" aria-pressed="false">Café San Domingo</button>
+        <button type="button" class="chip" data-b="resto" aria-pressed="false">Otras líneas</button>
+      </div>
+      <div class="rej mt">
+        <article class="tarjeta c12">
+          <h2 id="t-gb"></h2><p class="sub" id="sub-gb"></p>
+          <div class="grafico"><canvas id="gBloque" role="img" aria-labelledby="t-gb"></canvas></div>
+        </article>
+        <article class="tarjeta c12">
+          <h2 id="t-tb"></h2><p class="sub" id="sub-tb"></p>
+          <div class="tw"><table id="tablaBloque"></table></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="vista" id="vista-grupos" aria-label="Grupos" hidden>
+      <div class="rej mt" id="gruposTarjetas"></div>
+    </section>
+
+    <section class="vista" id="vista-control" aria-label="Control especial" hidden>
+      <div class="rej mt" id="controlTarjetas"></div>
+    </section>
+  </div>
+
+  <!-- ===== ADMINISTRACIÓN ===== -->
+  <section class="vista" id="vista-historico" aria-labelledby="t-hist" hidden>
+    <div class="rej mt">
+      <article class="tarjeta c12">
+        <h2 id="t-hist">Carga del histórico de ventas</h2>
+        <p class="sub">Archivo HISTORICO_VENEJUGOS (.xlsx) con la hoja DINAMICA. Se procesa en este navegador; el archivo no se sube a ningún servidor.</p>
+        <label class="zona-carga" id="zonaHist">
+          <input type="file" id="fileHist" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+          <span class="zona-titulo">Elegir archivo del histórico</span>
+          <span class="zona-sub">o arrástralo aquí. Un archivo de 200 MB tarda entre 10 y 40 segundos.</span>
+        </label>
+        <div class="progreso" id="progHist" hidden>
+          <div class="barrita grande"><span id="progHistBarra"></span></div>
+          <p id="progHistTxt" role="status" aria-live="polite"></p>
+        </div>
+        <div id="histEstado" class="estado" role="status"></div>
+      </article>
+      <div class="c12" id="histResumen"></div>
+    </div>
+  </section>
+
+  <section class="vista" id="vista-rolling" aria-labelledby="t-roll" hidden>
+    <div class="rej mt">
+      <article class="tarjeta c12">
+        <h2 id="t-roll">Carga del Rolling y activaciones</h2>
+        <p class="sub">Archivo con las hojas NESTLE y PEPSICO Y SAN DOMINGO: cartera, metas de activación por subcategoría y Rolling en kilos por asesor.</p>
+        <label class="zona-carga" id="zonaRoll">
+          <input type="file" id="fileRoll" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+          <span class="zona-titulo">Elegir archivo de Rolling</span>
+          <span class="zona-sub">o arrástralo aquí.</span>
+        </label>
+        <div id="rollEstado" class="estado" role="status"></div>
+      </article>
+      <div class="c12" id="rollResumen"></div>
+    </div>
+  </section>
+
+  <section class="vista" id="vista-modelo" aria-labelledby="t-modelo" hidden>
+    <div id="mdEstado" class="estado mt" role="status"></div>
+    <form id="formModelo" class="rej mt" novalidate>
+      <article class="tarjeta c6">
+        <h2 id="t-modelo">Peso global por bloque</h2>
+        <p class="sub">Automático: proporción del promedio mensual de facturación. Manual: los fijas tú.</p>
+        <div class="radio-fila">
+          <label><input type="radio" name="pesoModo" value="automatico"> Automático</label>
+          <label><input type="radio" name="pesoModo" value="manual"> Manual</label>
+        </div>
+        <div class="tw"><table id="tablaPesos"></table></div>
+        <p class="nota" id="sumaManual"></p>
+      </article>
+      <article class="tarjeta c6">
+        <h2>Nestlé</h2>
+        <p class="sub">Rolling en kilos y activación por subcategoría.</p>
+        <div class="grid-campos">
+          <div class="campo"><label for="m-nr">Rolling en kilos (%)</label><input id="m-nr" type="number" min="0" max="100" step="1" name="nestle.rolling"></div>
+          <div class="campo"><label for="m-na">Activación (%)</label><input id="m-na" type="number" min="0" max="100" step="1" name="nestle.activacion"></div>
+        </div>
+        <p class="nota">Reparto de la activación entre subcategorías (se normaliza al 100 %):</p>
+        <div class="grid-campos" id="camposSub"></div>
+        <div class="campo"><label for="m-meta">Meta de activación de otras marcas Nestlé (% de la cartera)</label><input id="m-meta" type="number" min="0" max="100" step="1" name="nestle.metaRestoPct"></div>
+      </article>
+      <article class="tarjeta c6">
+        <h2>PepsiCo y Café San Domingo</h2>
+        <p class="sub">Reparto interno entre Rolling en kilos y activación.</p>
+        <div class="grid-campos">
+          <div class="campo"><label for="m-pr">PepsiCo: Rolling (%)</label><input id="m-pr" type="number" min="0" max="100" step="1" name="pepsico.rolling"></div>
+          <div class="campo"><label for="m-pa">PepsiCo: activación (%)</label><input id="m-pa" type="number" min="0" max="100" step="1" name="pepsico.activacion"></div>
+          <div class="campo"><label for="m-sr">San Domingo: Rolling (%)</label><input id="m-sr" type="number" min="0" max="100" step="1" name="sanDomingo.rolling"></div>
+          <div class="campo"><label for="m-sa">San Domingo: activación (%)</label><input id="m-sa" type="number" min="0" max="100" step="1" name="sanDomingo.activacion"></div>
+        </div>
+      </article>
+      <article class="tarjeta c6">
+        <h2>Otras líneas</h2>
+        <p class="sub">Solo venta en dólares, contra el promedio propio de cada asesor en cada línea.</p>
+        <div class="grid-campos">
+          <div class="campo"><label for="m-mm">Meses mínimos con venta para asignar la línea</label><input id="m-mm" type="number" min="1" max="12" step="1" name="resto.minMeses"></div>
+          <div class="campo"><label for="m-mp">Promedio mínimo mensual por línea (USD)</label><input id="m-mp" type="number" min="0" step="5" name="resto.minPromedioUsd"></div>
+        </div>
+      </article>
+      <article class="tarjeta c12">
+        <h2>Reglas generales</h2>
+        <div class="grid-campos">
+          <div class="campo"><label for="m-tope">Tope de cumplimiento por indicador (%)</label><input id="m-tope" type="number" min="100" max="200" step="5" name="tope"></div>
+          <div class="campo ancho"><label for="m-esp">Casos especiales, control independiente (uno por línea)</label><textarea id="m-esp" name="casosEspeciales" rows="2"></textarea></div>
+          <div class="campo ancho"><label for="m-nov">No son asesores, se excluyen del ranking (uno por línea)</label><textarea id="m-nov" name="noVendedores" rows="2"></textarea></div>
+        </div>
+        <label class="check"><input type="checkbox" name="excluirEspecialesDeLaBase"> Calcular los pesos sin la venta de los casos especiales</label>
+        <div class="acciones">
+          <button type="submit" class="btn btn-primario">Guardar y recalcular</button>
+          <button type="button" class="btn btn-borde" id="btnRestaurar">Restaurar valores iniciales</button>
+        </div>
+        <p class="estado-linea" id="mdMsg" role="status"></p>
+      </article>
+      <article class="tarjeta c12">
+        <h2>Promedio mensual por unidad de negocio</h2>
+        <p class="sub" id="notaUnidades"></p>
+        <div class="tw alto-max"><table id="tablaUnidades"></table></div>
+      </article>
+    </form>
+  </section>
+
+  <section class="vista" id="vista-github" aria-labelledby="t-gh" hidden>
+    <div class="rej mt">
+      <article class="tarjeta c8">
+        <h2 id="t-gh">Conexión GitHub</h2>
+        <p class="sub">Guarda los datos procesados en el repositorio del sitio para que cualquiera que abra la página vea el ranking sin cargar los Excel.</p>
+        <form id="formGh" novalidate>
+          <div class="grid-campos">
+            <div class="campo"><label for="g-owner">Usuario u organización</label><input id="g-owner" name="owner" autocomplete="off" placeholder="usuario-de-github"></div>
+            <div class="campo"><label for="g-repo">Repositorio</label><input id="g-repo" name="repo" autocomplete="off" placeholder="ranking-comercial"></div>
+            <div class="campo"><label for="g-branch">Rama</label><input id="g-branch" name="branch" autocomplete="off" placeholder="main"></div>
+            <div class="campo"><label for="g-path">Archivo de datos</label><input id="g-path" name="path" autocomplete="off" placeholder="ranking-data.json"></div>
+            <div class="campo ancho"><label for="g-token">Token de acceso personal</label><input id="g-token" name="token" type="password" autocomplete="off" placeholder="github_pat_…"></div>
+          </div>
+          <p class="nota">Token "fine-grained" limitado a este repositorio con permiso Contents: Read and write. Se guarda solo en este navegador y nunca se publica.</p>
+          <label class="check"><input type="checkbox" name="auto"> Publicar automáticamente después de cada carga o cambio del modelo</label>
+          <div class="acciones">
+            <button type="submit" class="btn btn-primario">Guardar conexión</button>
+            <button type="button" class="btn btn-borde" id="btnProbar">Probar conexión</button>
+            <button type="button" class="btn btn-primario" id="btnPublicar">Publicar datos ahora</button>
+            <button type="button" class="btn btn-borde" id="btnTraer">Traer datos de GitHub</button>
+            <button type="button" class="btn btn-texto" id="btnOlvidar">Borrar token de este navegador</button>
+          </div>
+        </form>
+        <div id="ghEstado" class="estado" role="status" aria-live="polite"></div>
+      </article>
+      <article class="tarjeta c4">
+        <h2>Actividad</h2>
+        <p class="sub">Publicaciones y pruebas de esta sesión.</p>
+        <ol id="ghLog" class="log"></ol>
+      </article>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pie-sitio">
+  <span id="pieFuentes">Sin datos cargados.</span>
+  <span class="espacio"></span>
+  <span>© 2026 Venejugos</span>
+</footer>
+
+<div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+
+<dialog id="dlgDetalle" aria-labelledby="dlgTitulo">
+  <div class="cab">
+    <h3 id="dlgTitulo"></h3>
+    <button type="button" class="btn-cerrar" id="dlgCerrar" aria-label="Cerrar detalle">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="cue" id="dlgCuerpo"></div>
+</dialog>
+
+<script src="xlsx.full.min.js" defer></script>
+<script src="chart.umd.min.js" defer></script>
+<script src="historico-core.js" defer></script>
+<script src="rolling.js" defer></script>
+<script src="modelo.js" defer></script>
+<script src="github.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>
